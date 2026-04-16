@@ -105,6 +105,9 @@ jobs:
           ruby-version: 'ruby'
           bundler-cache: true
 
+      - name: Install fastlane
+        run: sudo gem install fastlane -N
+
       - name: Build and Upload
         shell: bash
         env:
@@ -121,5 +124,4 @@ jobs:
           FASTLANE_HIDE_CHANGELOG: "1"
         run: |
           set -o pipefail
-          bundle exec fastlane --version
-          bundle exec fastlane ios release match_readonly:${{ inputs.match_readonly }}
+          fastlane ios release match_readonly:${{ inputs.match_readonly }}
