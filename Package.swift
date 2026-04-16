@@ -12,17 +12,17 @@ let package = Package(
             targets: ["ChatTextApp"]
         )
     ],
-    dependencies: [
-//        .package(
-//            url: "https://github.com/ml-explore/mlx-swift-lm.git",
-//            branch: "main"
-//        )
+		dependencies: [
+        .package(
+            url: "https://github.com/pvieito/PythonKit",
+            branch: "main"
+        )
     ],
     targets: [
         .target(
             name: "ChatTextApp",
-            dependencies: [
-//                .product(name: "MLXLLM", package: "mlx-swift-lm")
+						dependencies: [
+                .product(name: "PythonKit", package: "PythonKit")
             ],
             path: ".",
             exclude: [
