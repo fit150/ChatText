@@ -1,0 +1,54 @@
+name: ChatText
+
+settings:
+  base:
+    APP_BUNDLE_ID: app.fit150.ChatText
+
+packages:
+  ChatTextApp:
+    path: ChatText.swiftpm
+
+targets:
+  Said:
+    type: application
+    platform: iOS
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        GENERATE_INFOPLIST_FILE: YES
+        MARKETING_VERSION: 0.1
+        CURRENT_PROJECT_VERSION: 1
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: false
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+
+				INFOPLIST_KEY_NSMicrophoneUsageDescription: need mic
+
+        INFOPLIST_KEY_UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+      configs:
+        Debug:
+          CODE_SIGN_STYLE: Automatic
+          DEVELOPMENT_TEAM: 89XHWPF6B6
+
+        Release:
+          CODE_SIGN_STYLE: Manual
+          DEVELOPMENT_TEAM: 89XHWPF6B6
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          PROVISIONING_PROFILE_SPECIFIER: "match AppStore app.fit150.ChatText"
+
+    sources:
+      - Said
+
+    dependencies:
+      - package: ChatTextApp
+        product: ChatTextApp

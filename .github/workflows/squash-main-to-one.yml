@@ -1,0 +1,39 @@
+name: Squash main to single commit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  squash:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Create orphan history with current snapshot
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 创建 orphan 分支（无历史），但保留当前工作区文件
+          git checkout --orphan _clean_main
+
+          # 清空暂存区（index），不删除工作区文件
+          git rm -rf --cached . || true
+
+          # 重新加入当前 main 的全部文件快照
+          git add -A
+
+          # 创建唯一提交
+          git commit -m "Initial commit"
+
+          # 强推覆盖 main
+          git push -f origin HEAD:main

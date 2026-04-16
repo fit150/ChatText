@@ -1,0 +1,96 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      match_readonly:
+        type: boolean
+        default: true
+        required: false
+      
+      download_model:
+        type: boolean
+        default: false
+        required: false
+
+env:
+  HF_MODEL_REPO: Qwen3-ASR-1.7B-4bit
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout ChatText.swiftpm
+        uses: actions/checkout@v4
+        with:
+          repository: fit150/ChatText.swiftpm
+          token: ${{ secrets.CHAT_TEXT_SWIFTPM_REPO_TOKEN }}
+          path: ChatText.swiftpm
+
+      - name: Replace Package.swift
+        run: cp Package.swift ChatText.swiftpm/Package.swift
+
+      - name: Download base model from Hugging Face into CopyResources/$HF_MODEL_REPO
+        if: ${{ inputs.download_model }}
+        run: |
+          set -euxo pipefail
+
+          rm -rf hf_download_dir
+          mkdir -p hf_download_dir
+
+          brew install huggingface-cli
+
+          hf download "mlx-community/$HF_MODEL_REPO" \
+            --local-dir hf_download_dir \
+            --exclude ".git*" \
+            --exclude ".cache/*" \
+            --exclude "*.md" \
+            --exclude "README*" \
+            --exclude "LICENSE*" \
+            --exclude "*.png" \
+            --exclude "*.jpg" \
+            --exclude "*.jpeg" \
+            --exclude "*.webp"
+
+          MODEL_TARGET_DIR="SaidApp/CopyResources/$HF_MODEL_REPO"
+
+          rm -rf "$MODEL_TARGET_DIR"
+          mkdir -p "$MODEL_TARGET_DIR"
+
+          cp -R hf_download_dir/* "$MODEL_TARGET_DIR"/
+
+          echo "model dir files:"
+          find "$MODEL_TARGET_DIR" -maxdepth 3 | sort
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Install fastlane
+        run: sudo gem install fastlane -N
+
+      - name: Build and Upload
+        shell: bash
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          TEAM_ID: ${{ vars.TEAM_ID }}
+
+          ASC_KEY_ID: ${{ vars.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ vars.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+
+          CERT_REPO_TOKEN: ${{ secrets.CERT_REPO_TOKEN }}
+
+          FASTLANE_SKIP_UPDATE_CHECK: "1"
+          FASTLANE_HIDE_CHANGELOG: "1"
+        run: |
+          set -o pipefail
+          fastlane ios release match_readonly:${{ inputs.match_readonly }}

@@ -1,0 +1,84 @@
+default_platform(:ios)
+
+platform :ios do
+  lane :release do |options|
+
+		require 'securerandom'
+
+    match_readonly =
+      if options.key?(:match_readonly)
+        options[:match_readonly].to_s.downcase == "true"
+      else
+        false
+      end
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"]
+    )
+
+    keychain_name = "fastlane_tmp.keychain-db"
+		keychain_password = SecureRandom.hex(16)
+    keychain_path = File.expand_path("~/Library/Keychains/#{keychain_name}")
+
+    create_keychain(
+      name: keychain_name,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false
+    )
+
+    unlock_keychain(
+      path: keychain_path,
+      password: keychain_password,
+      add_to_search_list: true,
+      set_default: true
+    )
+
+    match(
+      type: "appstore",
+      readonly: match_readonly,
+      api_key: api_key,
+      app_identifier: ["app.fit150.ChatText"],
+      git_url: "https://#{ENV['CERT_REPO_TOKEN']}@github.com/fit150/ios-cert.git",
+      keychain_name: keychain_name,
+      keychain_password: keychain_password
+    )
+
+    next_build_number = (
+      latest_testflight_build_number(
+        app_identifier: "app.fit150.ChatText",
+        api_key: api_key
+      ) || 0
+    ) + 1
+
+
+    build_app(
+      scheme: "ChatText",
+      project: "ChatText.xcodeproj",
+      configuration: "Release",
+      export_method: "app-store",
+
+      export_options: {
+        signingStyle: "manual",
+        compileBitcode: false,
+        provisioningProfiles: {
+          "app.fit150.ChatText" => "match AppStore app.fit150.ChatText"
+        }
+      },
+
+      xcargs: [
+        "CURRENT_PROJECT_VERSION=#{next_build_number}",
+        "ENABLE_BITCODE=NO"
+      ].join(" ")
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
