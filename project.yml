@@ -47,7 +47,7 @@ targets:
           PROVISIONING_PROFILE_SPECIFIER: "match AppStore app.fit150.ChatText"
 
     sources:
-      - Said
+      - ChatText
 
     dependencies:
       - package: ChatTextApp
