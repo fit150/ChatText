@@ -121,4 +121,5 @@ jobs:
           FASTLANE_HIDE_CHANGELOG: "1"
         run: |
           set -o pipefail
+          bundle exec fastlane --version
           bundle exec fastlane ios release match_readonly:${{ inputs.match_readonly }}
