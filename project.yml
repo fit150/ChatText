@@ -9,7 +9,7 @@ packages:
     path: ChatText.swiftpm
 
 targets:
-  Said:
+  ChatText:
     type: application
     platform: iOS
 
