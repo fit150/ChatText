@@ -102,7 +102,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 'lastest'
+          ruby-version: 'ruby'
           bundler-cache: true
 
       - name: Build and Upload
