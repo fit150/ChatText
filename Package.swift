@@ -15,7 +15,7 @@ let package = Package(
 		dependencies: [
         .package(
             url: "https://github.com/pvieito/PythonKit",
-            branch: "main"
+            branch: "master"
         )
     ],
     targets: [
