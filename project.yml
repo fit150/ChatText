@@ -35,6 +35,18 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
 
+        # ======= 【新增 - 官方文档步骤 6：Build Settings】 =======
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        ENABLE_TESTABILITY: YES
+        
+        # 【注意修改路径】：如果 Python.xcframework 在项目根目录，保持 $(PROJECT_DIR)。
+        # 如果你把它放在了类似 Frameworks/ 的子目录，请改成 $(PROJECT_DIR)/Frameworks
+        FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)
+        
+        HEADER_SEARCH_PATHS: $(inherited) "$(BUILT_PRODUCTS_DIR)/Python.framework/Headers"
+        CLANG_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: NO
+        # ========================================================
+
       configs:
         Debug:
           CODE_SIGN_STYLE: Automatic
@@ -49,6 +61,29 @@ targets:
     sources:
       - ChatText
 
+    # ======= 【修改 - 官方文档步骤 5：引入 XCFramework】 =======
     dependencies:
       - package: ChatTextApp
         product: ChatTextApp
+      # 【注意修改路径】：根据实际存放位置填写，例如 Frameworks/Python.xcframework
+      - framework: Python.xcframework
+        embed: true
+        codeSign: true
+    # ==========================================================
+
+    # ======= 【新增 - 官方文档步骤 7：处理 Python 库的脚本】 =======
+    # 使用 postCompileScripts 确保它在"编译后、嵌入框架前"执行
+    postCompileScripts:
+      - name: "[Python] Process Python libraries"
+        script: |
+          set -e
+          
+          # 【注意修改路径】：确认 build_utils.sh 的真实相对路径。
+          # 如果 BeeWare 解压后的目录结构不同，请修改这里的路径。
+          source $PROJECT_DIR/Python.xcframework/build/utils.sh
+          
+          # 【注意修改目录名】：第二个参数 'app' 是你的 Python 代码目录。
+          # 请把它换成你真正放 Python 代码的文件夹名字（比如 ChatTextApp 或者 python_src 等）
+          install_python Python.xcframework app
+        basedOnDependencyAnalysis: false
+    # =============================================================

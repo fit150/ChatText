@@ -36,6 +36,31 @@ jobs:
       - name: Replace Package.swift
         run: cp Package.swift ChatText.swiftpm/Package.swift
 
+      # ========== 新增：下载并解压 Python-Apple-support（iOS） XCFramework ==========
+      - name: Download Python-Apple-support iOS XCFramework
+        env:
+          PYTHON_APPLE_SUPPORT_URL: "https://github.com/beeware/Python-Apple-support/releases/download/3.14-b9/Python-3.14-iOS-support.b9.tar.gz"
+        run: |
+          set -euxo pipefail
+
+          # 创建临时目录用于解压
+          tmp_dir=$(mktemp -d)
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          # 下载（使用 -L 支持重定向，-sS 隐藏进度但显示错误）
+          curl -sSL -o "$tmp_dir/Python-iOS-support.tar.gz" "$PYTHON_APPLE_SUPPORT_URL"
+
+          # 解压到临时目录
+          tar -xzf "$tmp_dir/Python-iOS-support.tar.gz" -C "$tmp_dir"
+
+          # 将其中的 Python.xcframework 复制到项目根目录
+          # 如果根目录已有同名目录，先删除再复制；若想改为“覆盖合并”，可以用 rsync -a
+          if [ -d Python.xcframework ]; then
+            rm -rf Python.xcframework
+          fi
+          cp -R "$tmp_dir/Python.xcframework" "Python.xcframework"
+      # ========== 新增步骤结束 ==========
+
       - name: Download base model from Hugging Face into CopyResources/$HF_MODEL_REPO
         if: ${{ inputs.download_model }}
         run: |
@@ -58,7 +83,7 @@ jobs:
             --exclude "*.jpeg" \
             --exclude "*.webp"
 
-          MODEL_TARGET_DIR="SaidApp/CopyResources/$HF_MODEL_REPO"
+          MODEL_TARGET_DIR="ChatTextApp/CopyResources/$HF_MODEL_REPO"
 
           rm -rf "$MODEL_TARGET_DIR"
           mkdir -p "$MODEL_TARGET_DIR"
