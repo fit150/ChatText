@@ -105,9 +105,6 @@ jobs:
           ruby-version: 'ruby'
           bundler-cache: true
 
-      - name: Update fastlane to latest master
-        run: bundle update fastlane
-
       - name: Build and Upload
         shell: bash
         env:
