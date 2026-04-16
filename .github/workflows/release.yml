@@ -99,8 +99,10 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Install fastlane
-        run: sudo gem install fastlane -N
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
 
       - name: Build and Upload
         shell: bash
@@ -118,4 +120,4 @@ jobs:
           FASTLANE_HIDE_CHANGELOG: "1"
         run: |
           set -o pipefail
-          fastlane ios release match_readonly:${{ inputs.match_readonly }}
+          bundle exec fastlane ios release match_readonly:${{ inputs.match_readonly }}
