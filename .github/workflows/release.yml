@@ -99,13 +99,15 @@ jobs:
 #      - name: Generate Xcode project
 #        run: xcodegen generate
 
-      - name: Install Tuist via Homebrew
-        run: |
-          brew tap tuist/tuist
-          brew install --formula tuist
+# 使用 Mise 安装 Tuist
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
       
-      - name: Generate project
-        run: tuist generate
+      # 现在可以直接使用 tuist 命令
+      - run: tuist generate
+
 
 
 
