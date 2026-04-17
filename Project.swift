@@ -52,7 +52,7 @@ let project = Project(
             
             // 2. dependencies 在 scripts 之后
             dependencies: [
-                .target(name: "ChatTextApp"),
+                .target(name: "ChatTextApp", type: .runtime),
                 .xcframework(path: "Python.xcframework")
             ],
             
