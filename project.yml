@@ -75,7 +75,7 @@ targets:
         script: |
           set -e
           # 恢复官方文档原样的写法
-          source $PROJECT_DIR/Python.xcframework/build/build_utils.sh
+          source $PROJECT_DIR/Python.xcframework/build/utils.sh
           install_python Python.xcframework app
         basedOnDependencyAnalysis: false
     # =============================================================
