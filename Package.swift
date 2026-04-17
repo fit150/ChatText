@@ -21,7 +21,7 @@ let package = Package(
     targets: [
         .target(
             name: "ChatTextApp",
-						dependencies: [
+			dependencies: [
                 .product(name: "PythonKit", package: "PythonKit")
             ],
             path: ".",
