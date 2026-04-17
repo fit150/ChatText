@@ -93,11 +93,18 @@ jobs:
           echo "model dir files:"
           find "$MODEL_TARGET_DIR" -maxdepth 3 | sort
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
+#      - name: Install XcodeGen
+#        run: brew install xcodegen
+
+#      - name: Generate Xcode project
+#        run: xcodegen generate
+
+      - name: Install Tuist
+        run: curl -Ls https://install.tuist.io | bash
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: tuist generate
+
 
       - name: Install fastlane
         run: sudo gem install fastlane -N
