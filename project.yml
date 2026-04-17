@@ -69,21 +69,25 @@ targets:
       - framework: Python.xcframework
         embed: true
         codeSign: true
-    # ==========================================================
+    #     
 
-    # ======= 【新增 - 官方文档步骤 7：处理 Python 库的脚本】 =======
-    # 使用 postCompileScripts 确保它在"编译后、嵌入框架前"执行
-    postCompileScripts:
+# ======= 【修改 - 官方文档步骤 7：处理 Python 库的脚本】 =======
+    # 必须使用 postBuildScripts，确保在 "Embed Frameworks" 之后执行！
+    postBuildScripts:
       - name: "[Python] Process Python libraries"
         script: |
           set -e
           
-          # 【注意修改路径】：确认 build_utils.sh 的真实相对路径。
-          # 如果 BeeWare 解压后的目录结构不同，请修改这里的路径。
+          # 引入 BeeWare 工具
           source $PROJECT_DIR/Python.xcframework/build/utils.sh
           
-          # 【注意修改目录名】：第二个参数 'app' 是你的 Python 代码目录。
-          # 请把它换成你真正放 Python 代码的文件夹名字（比如 ChatTextApp 或者 python_src 等）
-          install_python Python.xcframework app
+          # 【关键修改】：必须指向 $BUILT_PRODUCTS_DIR 里已经嵌入好的 Framework
+          FRAMEWORK_PATH="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/Python.framework"
+          
+          # 如果你有随 App 打包的 Python 依赖库，指向对应目录（没有的话保留 app 也可以）
+          APP_PATH="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/app"
+          
+          install_python "$FRAMEWORK_PATH" "$APP_PATH"
         basedOnDependencyAnalysis: false
     # =============================================================
+
