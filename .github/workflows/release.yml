@@ -99,12 +99,6 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 'ruby'
-          bundler-cache: true
-
       - name: Install fastlane
         run: sudo gem install fastlane -N
 
