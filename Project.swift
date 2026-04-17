@@ -36,6 +36,11 @@ let project = Project(
             
             sources: ["ChatText/**"],
             
+            resources: [
+                .folderReference(path: "ChatText/AppIcon.icon")
+            ],
+
+            
             // 1. scripts 必须在 dependencies 之前
             scripts: [
                 .post(
