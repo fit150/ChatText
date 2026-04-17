@@ -99,7 +99,7 @@ jobs:
 #      - name: Generate Xcode project
 #        run: xcodegen generate
 
-			- uses: tuist/tuist-action@main
+      - uses: tuist/tuist-action@main
         with:
           command: 'generate'
 
