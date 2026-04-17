@@ -100,7 +100,10 @@ jobs:
 #        run: xcodegen generate
 
       - name: Install Tuist
-        run: brew install tuist
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+          tools: tuist
 
       - name: Generate Xcode project
         run: tuist generate
