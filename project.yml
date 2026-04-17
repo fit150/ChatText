@@ -61,33 +61,23 @@ targets:
     sources:
       - ChatText
 
-    # ======= 【修改 - 官方文档步骤 5：引入 XCFramework】 =======
     dependencies:
       - package: ChatTextApp
         product: ChatTextApp
-      # 【注意修改路径】：根据实际存放位置填写，例如 Frameworks/Python.xcframework
       - framework: Python.xcframework
-        embed: true
-        codeSign: true
-    #     
+        embed: false       # 🚨 关键修改：关掉自动嵌入，交给脚本处理！
+        codeSign: false    # 🚨 对应关闭自动签名，脚本处理后的文件会在打包时被统一签名
+    # ==========================================================
 
-# ======= 【修改 - 官方文档步骤 7：处理 Python 库的脚本】 =======
-    # 必须使用 postBuildScripts，确保在 "Embed Frameworks" 之后执行！
+    # ======= 【修改 - 处理 Python 库的脚本】 =======
     postBuildScripts:
       - name: "[Python] Process Python libraries"
         script: |
           set -e
-          
-          # 引入 BeeWare 工具
-          source $PROJECT_DIR/Python.xcframework/build/utils.sh
-          
-          # 【关键修改】：必须指向 $BUILT_PRODUCTS_DIR 里已经嵌入好的 Framework
-          FRAMEWORK_PATH="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/Python.framework"
-          
-          # 如果你有随 App 打包的 Python 依赖库，指向对应目录（没有的话保留 app 也可以）
-          APP_PATH="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/app"
-          
-          install_python "$FRAMEWORK_PATH" "$APP_PATH"
+          # 恢复官方文档原样的写法
+          source $PROJECT_DIR/Python.xcframework/build/build_utils.sh
+          install_python Python.xcframework app
         basedOnDependencyAnalysis: false
     # =============================================================
+
 
