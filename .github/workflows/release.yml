@@ -99,9 +99,13 @@ jobs:
 #      - name: Generate Xcode project
 #        run: xcodegen generate
 
-      - uses: tuist/tuist-action@main
-        with:
-          command: 'generate'
+      - name: Install Tuist via Homebrew
+        run: |
+          brew tap tuist/tuist
+          brew install --formula tuist
+      
+      - name: Generate project
+        run: tuist generate
 
 
 
