@@ -61,23 +61,52 @@ targets:
     sources:
       - ChatText
 
+    # ======= 【依赖：必须开启 embed & sign】 =======
     dependencies:
       - package: ChatTextApp
         product: ChatTextApp
       - framework: Python.xcframework
-        embed: false       # 🚨 关键修改：关掉自动嵌入，交给脚本处理！
-        codeSign: false    # 🚨 对应关闭自动签名，脚本处理后的文件会在打包时被统一签名
+        embed: true      # 必须为 true，让 Xcode 把 Python 主二进制拷进去并签名
+        codeSign: true   # 必须为 true
     # ==========================================================
 
-    # ======= 【修改 - 处理 Python 库的脚本】 =======
+    # ======= 【关键脚本：必须在 postBuildScripts 执行！】 =======
+    # postBuildScripts 会在 Xcode 的 "Embed Frameworks" 和 "签名" 完成之后执行
     postBuildScripts:
-      - name: "[Python] Process Python libraries"
+      - name: "[Python] Post-Embed Process Python libraries"
         script: |
           set -e
-          # 恢复官方文档原样的写法
-          source $PROJECT_DIR/Python.xcframework/build/utils.sh
-          install_python Python.xcframework app
+          
+          source "$PROJECT_DIR/Python.xcframework/build/utils.sh"
+          
+          PYTHON_XCFRAMEWORK_PATH="Python.xcframework"
+          
+          # 1. 拷贝标准库 .py 文件到 .app/python/lib/
+          install_stdlib $PYTHON_XCFRAMEWORK_PATH
+          
+          PYTHON_VER=$(ls -1 "$CODESIGNING_FOLDER_PATH/python/lib")
+          echo "Install Python $PYTHON_VER standard library extension modules..."
+          
+          # 2. 处理 .app/python/lib/ 下的 .so (生成独立的 .framework 并留 .fwork)
+          process_dylibs $PYTHON_XCFRAMEWORK_PATH "python/lib/$PYTHON_VER/lib-dynload"
+          
+          # 🌟 3. 神来之笔：处理已经被 Xcode 拷进来的 Python.framework 内部的 .so！
+          # 把原始的 .so 移走，替换为 .fwork 指针，彻底杜绝 PAC 崩溃！
+          if [ -d "$CODESIGNING_FOLDER_PATH/Frameworks/Python.framework/lib/$PYTHON_VER/lib-dynload" ]; then
+            echo "Patching embedded Python.framework to remove raw .so files..."
+            process_dylibs $PYTHON_XCFRAMEWORK_PATH "Frameworks/Python.framework/lib/$PYTHON_VER/lib-dynload"
+          fi
+          
+          # 4. 处理你自己的 Python 代码目录 (根据你的实际目录调整，没有的话会自动跳过)
+          for package_path in app app_packages; do
+            if [ -d "$CODESIGNING_FOLDER_PATH/$package_path" ]; then
+              echo "Installing $package_path extension modules ..."
+              process_dylibs $PYTHON_XCFRAMEWORK_PATH $package_path
+            fi
+          done
+          
         basedOnDependencyAnalysis: false
     # =============================================================
+
 
 
