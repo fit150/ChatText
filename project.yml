@@ -67,37 +67,43 @@ targets:
         product: ChatTextApp
       - framework: Python.xcframework
         embed: true      # 必须为 true，让 Xcode 把 Python 主二进制拷进去并签名
-        codeSign: true   # 必须为 true
+        codeSign: false
     # ==========================================================
 
     # ======= 【关键脚本：必须在 postBuildScripts 执行！】 =======
     # postBuildScripts 会在 Xcode 的 "Embed Frameworks" 和 "签名" 完成之后执行
     postBuildScripts:
-      - name: "[Python] Post-Embed Process Python libraries"
+      - name: "[Python] Manual Embed, Patch & Re-Sign"
         script: |
           set -e
           
           source "$PROJECT_DIR/Python.xcframework/build/utils.sh"
           
-          PYTHON_XCFRAMEWORK_PATH="Python.xcframework"
+          # 🌟 1. 手动把 Python.framework 拷进 App 包
+          # 因为关闭了 embed:false，Xcode 只把 xcframework 解压到了 BUILT_PRODUCTS_DIR，我们需要自己拷贝
+          echo "Manually copying Python.framework to App bundle..."
+          cp -Rf "${BUILT_PRODUCTS_DIR}/Python.framework" "${CODESIGNING_FOLDER_PATH}/Frameworks/"
           
-          # 1. 拷贝标准库 .py 文件到 .app/python/lib/
+          PYTHON_XCFRAMEWORK_PATH="$PROJECT_DIR/Python.xcframework"
+          PYTHON_FRAMEWORK_PATH="${CODESIGNING_FOLDER_PATH}/Frameworks/Python.framework"
+          
+          # 2. 拷贝标准库 .py 文件到 .app/python/lib/
           install_stdlib $PYTHON_XCFRAMEWORK_PATH
           
           PYTHON_VER=$(ls -1 "$CODESIGNING_FOLDER_PATH/python/lib")
           echo "Install Python $PYTHON_VER standard library extension modules..."
           
-          # 2. 处理 .app/python/lib/ 下的 .so (生成独立的 .framework 并留 .fwork)
+          # 3. 处理外部的 .so (生成独立的 .framework 并留 .fwork)
           process_dylibs $PYTHON_XCFRAMEWORK_PATH "python/lib/$PYTHON_VER/lib-dynload"
           
-          # 🌟 3. 神来之笔：处理已经被 Xcode 拷进来的 Python.framework 内部的 .so！
-          # 把原始的 .so 移走，替换为 .fwork 指针，彻底杜绝 PAC 崩溃！
-          if [ -d "$CODESIGNING_FOLDER_PATH/Frameworks/Python.framework/lib/$PYTHON_VER/lib-dynload" ]; then
+          # 🌟 4. 处理 Python.framework 内部的 .so
+          # 此时 Xcode 还没对它签名，我们可以随意“动刀子”！
+          if [ -d "$PYTHON_FRAMEWORK_PATH/lib/$PYTHON_VER/lib-dynload" ]; then
             echo "Patching embedded Python.framework to remove raw .so files..."
             process_dylibs $PYTHON_XCFRAMEWORK_PATH "Frameworks/Python.framework/lib/$PYTHON_VER/lib-dynload"
           fi
           
-          # 4. 处理你自己的 Python 代码目录 (根据你的实际目录调整，没有的话会自动跳过)
+          # 5. 处理你自己的 Python 代码目录
           for package_path in app app_packages; do
             if [ -d "$CODESIGNING_FOLDER_PATH/$package_path" ]; then
               echo "Installing $package_path extension modules ..."
@@ -105,8 +111,24 @@ targets:
             fi
           done
           
+          # 🌟🌟🌟 6. 神级关键步骤：手动对修改后的结构进行签名！
+          # 必须先签被 .fwork 引用的子 framework，再签主 Python.framework
+          echo "Re-signing patched frameworks..."
+          
+          # 找到所有被提取出来的独立 framework 并签名
+          find "${CODESIGNING_FOLDER_PATH}" -name "*.fwork" | while read fwork_file; do
+            framework_dir="$(dirname "$fwork_file")/$(basename "$fwork_file" .fwork).framework"
+            if [ -d "$framework_dir" ]; then
+              codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" "$framework_dir"
+            fi
+          done
+          
+          # 最后签名被我们动过内部结构的 Python.framework
+          codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY}" "$PYTHON_FRAMEWORK_PATH"
+          
+          echo "Python patching and signing completed successfully!"
+          
         basedOnDependencyAnalysis: false
-    # =============================================================
 
 
 
