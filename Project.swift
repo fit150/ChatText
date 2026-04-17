@@ -3,7 +3,6 @@ import ProjectDescription
 let project = Project(
     name: "ChatText",
     
-    // packages 语法已变更
     packages: [
         .local(path: "ChatText.swiftpm")
     ],
@@ -11,14 +10,11 @@ let project = Project(
     targets: [
         .target(
             name: "ChatText",
-            destinations: [.iPhone, .iPad],  // 替代 platform
+            destinations: [.iPhone, .iPad],
             product: .app,
             bundleId: "app.fit150.ChatText",
-            
-            // 新版 deploymentTargets 语法
             deploymentTargets: .iOS("26.2"),
             
-            // 新版 infoPlist 语法
             infoPlist: .extendingDefault(
                 with: [
                     "ITSAppUsesNonExemptEncryption": false,
@@ -40,13 +36,27 @@ let project = Project(
             
             sources: ["ChatText/**"],
             
-            // 新版 dependencies 语法
+            // 1. scripts 必须在 dependencies 之前
+            scripts: [
+                .post(
+                    script: """
+                    set -e
+                    
+                    source "$PROJECT_DIR/Python.xcframework/build/utils.sh"
+                    install_python Python.xcframework app
+                    """,
+                    name: "[Python] Handle",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
+            
+            // 2. dependencies 在 scripts 之后
             dependencies: [
                 .target(name: "ChatTextApp"),
                 .xcframework(path: "Python.xcframework")
             ],
             
-            // 新版 settings 语法
+            // 3. settings 通常在最后
             settings: .settings(
                 base: [
                     "GENERATE_INFOPLIST_FILE": "YES",
@@ -68,21 +78,7 @@ let project = Project(
                     "CODE_SIGN_IDENTITY": "Apple Distribution",
                     "PROVISIONING_PROFILE_SPECIFIER": "match AppStore app.fit150.ChatText",
                 ]
-            ),
-            
-            // 新版 scripts 语法
-            scripts: [
-                .post(
-                    script: """
-                    set -e
-                    
-                    source "$PROJECT_DIR/Python.xcframework/build/utils.sh"
-                    install_python Python.xcframework app
-                    """,
-                    name: "[Python] Handle",
-                    basedOnDependencyAnalysis: false
-                )
-            ]
+            )
         )
     ]
 )
