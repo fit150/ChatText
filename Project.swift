@@ -37,7 +37,8 @@ let project = Project(
             sources: ["ChatText/**"],
             
             resources: [
-                .folderReference(path: "ChatText/AppIcon.icon")
+                .folderReference(path: "ChatText/AppIcon.icon"),
+                .folderReference(path: "app")
             ],
 
             
