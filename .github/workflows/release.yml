@@ -93,20 +93,18 @@ jobs:
           echo "model dir files:"
           find "$MODEL_TARGET_DIR" -maxdepth 3 | sort
 
-#      - name: Install XcodeGen
-#        run: brew install xcodegen
+      - name: Install XcodeGen
+        run: brew install xcodegen
 
-#      - name: Generate Xcode project
-#        run: xcodegen generate
+      - name: Generate Xcode project
+        run: xcodegen generate
 
-# 使用 Mise 安装 Tuist
-      - uses: jdx/mise-action@v2
-        with:
-          install: true
-          cache: true
+#      - uses: jdx/mise-action@v2
+#        with:
+#          install: true
+#          cache: true
       
-      # 现在可以直接使用 tuist 命令
-      - run: tuist generate
+#      - run: tuist generate
 
 
 
