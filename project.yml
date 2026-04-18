@@ -55,7 +55,10 @@ targets:
           PROVISIONING_PROFILE_SPECIFIER: "match AppStore app.fit150.ChatText"
 
     sources:
-      - ChatText
+      - path: ChatText
+      - path: app
+        type: folder
+        buildPhase: resources
 
     resources:
       - path: app
