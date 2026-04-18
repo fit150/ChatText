@@ -57,6 +57,11 @@ targets:
     sources:
       - ChatText
 
+    resources:
+      - path: app
+        type: folder
+        buildPhase: resources
+
     dependencies:
       - package: ChatTextApp
         product: ChatTextApp
