@@ -12,17 +12,13 @@ let package = Package(
             targets: ["ChatTextApp"]
         )
     ],
-		dependencies: [
-        .package(
-            url: "https://github.com/pvieito/PythonKit",
-            branch: "master"
-        )
+	dependencies: [
     ],
     targets: [
         .target(
             name: "ChatTextApp",
 			dependencies: [
-                .product(name: "PythonKit", package: "PythonKit")
+                
             ],
             path: ".",
             exclude: [
