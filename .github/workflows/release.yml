@@ -99,16 +99,6 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-#      - uses: jdx/mise-action@v2
-#        with:
-#          install: true
-#          cache: true
-      
-#      - run: tuist generate
-
-
-
-
       - name: Install fastlane
         run: sudo gem install fastlane -N
 
