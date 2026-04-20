@@ -6,7 +6,7 @@ settings:
 
 packages:
   ChatTextApp:
-    path: ChatText.swiftpm
+    path: ../ChatText.swiftpm
 
 targets:
   ChatText:
@@ -38,10 +38,8 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         ENABLE_TESTABILITY: YES
         
-        FRAMEWORK_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)
-        
         HEADER_SEARCH_PATHS: $(inherited) "$(BUILT_PRODUCTS_DIR)/Python.framework/Headers"
-        CLANG_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: NO
+        CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: NO
 
       configs:
         Debug:
