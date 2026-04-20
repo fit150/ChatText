@@ -6,7 +6,7 @@ settings:
 
 packages:
   ChatTextApp:
-    path: ../ChatText.swiftpm
+    path: ChatText.swiftpm
 
 targets:
   ChatText:
@@ -57,9 +57,7 @@ targets:
       - path: app
         type: folder
         buildPhase: resources
-
-    resources:
-      - path: app
+      - path: app_packages
         type: folder
         buildPhase: resources
 
@@ -71,12 +69,11 @@ targets:
         codeSign: true
 
     postBuildScripts:
-      - name: "[Python] Handle"
+      - name: "Process Python Packages"
         script: |
           set -e
-          
-          source "$PROJECT_DIR/Python.xcframework/build/utils.sh"
-          install_python Python.xcframework app
+          source $PROJECT_DIR/Python.xcframework/build/utils.sh
+          install_python Python.xcframework app app_packages
           
         basedOnDependencyAnalysis: false
 
